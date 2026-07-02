@@ -48,15 +48,22 @@ export default function GuessPhase({ room, car, songs, allPlayers, myPlayerIds, 
 
   async function handleAllLocalDone() {
     setAllLocalDone(true)
-    await supabase.from('players').update({ ready: true }).in('id', myPlayerIds)
 
-    // Check if all players in this car are ready → set car phase = 'done'
+    // Fetch BEFORE writing so we see the true current state (avoids read-after-write timing issues)
     const { data: carPlayers } = await supabase
       .from('players')
-      .select('*')
+      .select('id, ready')
       .eq('car_id', car.id)
 
-    if (carPlayers && carPlayers.every((p: Player) => p.ready)) {
+    await supabase.from('players').update({ ready: true }).in('id', myPlayerIds)
+
+    // After our update, will everyone in this car be ready?
+    const otherAlreadyReady = (carPlayers ?? []).filter(
+      (p: { id: string; ready: boolean }) => p.ready && !myPlayerIds.includes(p.id)
+    ).length
+    const total = (carPlayers ?? []).length
+
+    if (otherAlreadyReady + myPlayerIds.length >= total) {
       await supabase.from('cars').update({ phase: 'done' }).eq('id', car.id)
     }
   }
