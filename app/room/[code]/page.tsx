@@ -214,6 +214,12 @@ export default function RoomPage({ params }: { params: Promise<{ code: string }>
   const myCar = cars.find((c) => c.id === primaryPlayer?.car_id)
 
   // ── Room-wide phase routing ──────────────────────────────────────────────────
+  function handleGuestAdded(guestId: string) {
+    const updated = [...myPlayerIds, guestId]
+    setMyPlayerIds(updated)
+    localStorage.setItem(storageKey, JSON.stringify(updated))
+  }
+
   if (room.phase === 'lobby') {
     return (
       <Lobby
@@ -222,6 +228,7 @@ export default function RoomPage({ params }: { params: Promise<{ code: string }>
         cars={cars}
         myPlayerIds={validMyIds}
         isMainLeader={isMainLeader}
+        onGuestAdded={handleGuestAdded}
       />
     )
   }
