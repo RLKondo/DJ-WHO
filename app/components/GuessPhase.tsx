@@ -113,24 +113,33 @@ function GuessTurn({
   allPlayers: Player[]
   onSubmit: (guesses: GuessMap) => void
 }) {
+  // Skip songs this player submitted — they already know who picked it (themselves)
+  const songsToGuess = songs.filter((s) => s.player_id !== player.id)
+
   const [songIndex, setSongIndex] = useState(0)
   const [guesses, setGuesses] = useState<GuessMap>({})
   const [submitting, setSubmitting] = useState(false)
 
-  const currentSong = songs[songIndex]
-  // All players EXCEPT the current guesser (you can't guess your own song)
+  const currentSong = songsToGuess[songIndex]
+  // All players EXCEPT the current guesser
   const options = allPlayers.filter((p) => p.id !== player.id)
 
   function handleGuess(guessedPlayerId: string) {
     const updated = { ...guesses, [currentSong.id]: guessedPlayerId }
     setGuesses(updated)
 
-    if (songIndex + 1 < songs.length) {
+    if (songIndex + 1 < songsToGuess.length) {
       setSongIndex((i) => i + 1)
     } else {
       setSubmitting(true)
       onSubmit(updated)
     }
+  }
+
+  // Nothing to guess (edge case: player is the only one or all songs are theirs)
+  if (songsToGuess.length === 0) {
+    setTimeout(() => onSubmit({}), 100)
+    return null
   }
 
   return (
@@ -142,7 +151,7 @@ function GuessTurn({
             {player.name} — who submitted this?
           </p>
           <p className="text-[#F4F1EA] opacity-60 text-xs">
-            Song {songIndex + 1} of {songs.length}
+            Song {songIndex + 1} of {songsToGuess.length}
           </p>
         </div>
       </div>

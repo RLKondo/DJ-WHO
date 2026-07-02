@@ -36,16 +36,16 @@ export default function ResultsPhase({
   const maxScore = sorted[0] ? (scores[sorted[0].id] ?? 0) : 0
 
   async function handlePlayAgain() {
-    // Reset songs, guesses, car phases, player ready flags, room phase
     await supabase.from('songs').delete().eq('room_id', room.id)
     await supabase.from('guesses').delete().eq('room_id', room.id)
-    await supabase
-      .from('cars')
-      .update({ phase: 'waiting', current_song_index: 0, song_order: [] })
-      .eq('room_id', room.id)
+    await supabase.from('cars').update({ phase: 'waiting', current_song_index: 0, song_order: [] }).eq('room_id', room.id)
     await supabase.from('players').update({ ready: false }).eq('room_id', room.id)
     await supabase.from('rooms').update({ phase: 'lobby' }).eq('id', room.id)
   }
+
+  // Score relative to songs other players could actually guess
+  // (each player is excluded from guessing their own song, so max possible = songs.length - 1)
+  const maxPossible = Math.max(songs.length - 1, 1)
 
   return (
     <div className="min-h-screen flex flex-col px-6 py-10">

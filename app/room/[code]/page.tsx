@@ -299,6 +299,13 @@ export default function RoomPage({ params }: { params: Promise<{ code: string }>
 
   if (myCar.phase === 'done') {
     const allDone = cars.every((c) => c.phase === 'done')
+
+    async function handleReveal() {
+      await supabase.from('rooms').update({ phase: 'results' }).eq('id', room.id)
+      // Force a local reload in case the realtime event is delayed
+      await loadState()
+    }
+
     return (
       <div className="min-h-screen flex flex-col px-6 py-10">
         <h2 className="font-display text-2xl text-[#F4A340] text-center mb-2" style={{ fontFamily: 'var(--font-oswald)' }}>
@@ -307,7 +314,7 @@ export default function RoomPage({ params }: { params: Promise<{ code: string }>
         <p className="text-[#F4F1EA] opacity-60 text-center text-sm mb-8">
           {allDone
             ? isMainLeader
-              ? 'Everyone\'s done! Time to reveal.'
+              ? "Everyone's done! Time to reveal."
               : 'Waiting for the host to reveal results…'
             : 'Waiting for other cars to finish…'}
         </p>
@@ -316,7 +323,7 @@ export default function RoomPage({ params }: { params: Promise<{ code: string }>
           <button
             className="mt-8 w-full py-4 rounded-2xl bg-[#F4A340] text-[#1A2238] font-display text-xl active:opacity-80"
             style={{ fontFamily: 'var(--font-oswald)' }}
-            onClick={() => supabase.from('rooms').update({ phase: 'results' }).eq('id', room.id)}
+            onClick={handleReveal}
           >
             Reveal Results →
           </button>
