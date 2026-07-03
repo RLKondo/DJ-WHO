@@ -14,8 +14,8 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'DJ Who?',
-  description: 'Someone picked it. Can you guess who?',
+  title: 'RoadGamez',
+  description: '5 games for groups on the go',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
