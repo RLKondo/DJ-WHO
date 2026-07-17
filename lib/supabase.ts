@@ -57,35 +57,3 @@ export type Guess = {
   created_at: string
 }
 
-export type Playlist = {
-  id: string
-  code: string
-  host_id: string
-  songs_per_person: number
-  auto_play: boolean
-  phase: 'lobby' | 'adding' | 'playing' | 'paused' | 'done'
-  current_index: number
-  play_order: string[]
-  created_at: string
-}
-
-export type PlaylistMember = {
-  id: string
-  playlist_id: string
-  name: string
-  plate_code: string
-  color: string
-  done_adding: boolean
-  created_at: string
-}
-
-export type PlaylistSong = {
-  id: string
-  playlist_id: string
-  member_id: string
-  youtube_id: string
-  title: string
-  thumbnail_url: string | null
-  member_song_index: number
-  created_at: string
-}
