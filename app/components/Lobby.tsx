@@ -86,7 +86,8 @@ export default function Lobby({ room, players, cars, myPlayerIds, isMainLeader, 
       return
     }
     setStarting(true)
-    await supabase.from('rooms').update({ phase: 'submit' }).eq('id', room.id)
+    const nextPhase = room.mode === 'playlist' ? 'playlist_submit' : 'submit'
+    await supabase.from('rooms').update({ phase: nextPhase }).eq('id', room.id)
   }
 
   if (isMainLeader) {
@@ -173,6 +174,11 @@ function HostLobby({
           {room.code}
         </h1>
         <p className="text-[#F4F1EA] opacity-50 text-xs">Share this code — others join at dj-who.vercel.app</p>
+        {room.mode === 'playlist' && (
+          <p className="text-[#4FC3A1] text-xs mt-2">
+            🚗 Road Trip Playlist — each player adds up to {room.playlist_songs_per_player} song{room.playlist_songs_per_player === 1 ? '' : 's'}
+          </p>
+        )}
       </div>
 
       {/* Cars */}

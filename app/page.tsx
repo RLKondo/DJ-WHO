@@ -4,8 +4,10 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { generateRoomCode, generatePlateCode, pickColor } from '@/lib/plates'
+import ModeSelector from '@/app/components/ModeSelector'
 
 type Tab = 'create' | 'join'
+type Mode = 'guess' | 'playlist'
 
 export default function LandingPage() {
   const router = useRouter()
@@ -14,6 +16,8 @@ export default function LandingPage() {
   const [joinCode, setJoinCode] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [mode, setMode] = useState<Mode>('guess')
+  const [songsPerPlayer, setSongsPerPlayer] = useState(3)
 
   async function handleCreate() {
     if (!name.trim()) return
@@ -24,7 +28,10 @@ export default function LandingPage() {
       color: pickColor(0), is_main_leader: true, is_car_leader: true, ready: false,
     }).select().single()
     if (!player) { setError('Failed to create. Try again.'); setLoading(false); return }
-    const { data: room } = await supabase.from('rooms').insert({ code, main_leader_id: player.id, phase: 'lobby' }).select().single()
+    const { data: room } = await supabase.from('rooms').insert({
+      code, main_leader_id: player.id, phase: 'lobby',
+      mode, playlist_songs_per_player: songsPerPlayer, playlist_order: 'shuffle',
+    }).select().single()
     if (!room) { setError('Failed to create room. Try again.'); setLoading(false); return }
     const { data: car } = await supabase.from('cars').insert({ room_id: room.id, name: 'Car 1', car_leader_id: player.id }).select().single()
     await supabase.from('players').update({ room_id: room.id, car_id: car?.id ?? null }).eq('id', player.id)
@@ -66,6 +73,12 @@ export default function LandingPage() {
 
         {tab === 'create' && (
           <>
+            <ModeSelector
+              mode={mode}
+              onModeChange={setMode}
+              songsPerPlayer={songsPerPlayer}
+              onSongsPerPlayerChange={setSongsPerPlayer}
+            />
             <input type="text" placeholder="Your name" value={name}
               onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
               className="w-full rounded-xl px-4 py-4 bg-[#3D4466] text-[#F4F1EA] placeholder-[#F4F1EA]/40 outline-none text-base" />

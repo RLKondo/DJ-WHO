@@ -1,7 +1,7 @@
 'use client'
 
 import { use, useEffect, useState, useCallback } from 'react'
-import { supabase, Room, Car, Player, Song, Guess } from '@/lib/supabase'
+import { supabase, Room, Car, Player, Song, Guess, PlaylistQueueItem } from '@/lib/supabase'
 import { generatePlateCode, pickColor } from '@/lib/plates'
 import Lobby from '@/app/components/Lobby'
 import SubmitPhase from '@/app/components/SubmitPhase'
@@ -9,6 +9,9 @@ import PlayPhase from '@/app/components/PlayPhase'
 import GuessPhase from '@/app/components/GuessPhase'
 import ResultsPhase from '@/app/components/ResultsPhase'
 import CarStatusList from '@/app/components/CarStatusList'
+import PlaylistSubmitPhase from '@/app/components/PlaylistSubmitPhase'
+import PlaylistPlayer from '@/app/components/PlaylistPlayer'
+import PlaylistDonePhase from '@/app/components/PlaylistDonePhase'
 
 type GameState = {
   room: Room
@@ -16,6 +19,7 @@ type GameState = {
   players: Player[]
   songs: Song[]
   guesses: Guess[]
+  playlistQueue: PlaylistQueueItem[]
 }
 
 export default function RoomPage({ params }: { params: Promise<{ code: string }> }) {
@@ -37,11 +41,12 @@ export default function RoomPage({ params }: { params: Promise<{ code: string }>
 
     if (!room) { setError('Room not found. Check the code and try again.'); return }
 
-    const [{ data: cars }, { data: players }, { data: songs }, { data: guesses }] = await Promise.all([
+    const [{ data: cars }, { data: players }, { data: songs }, { data: guesses }, { data: playlistQueue }] = await Promise.all([
       supabase.from('cars').select('*').eq('room_id', room.id).order('created_at'),
       supabase.from('players').select('*').eq('room_id', room.id).order('created_at'),
       supabase.from('songs').select('*').eq('room_id', room.id),
       supabase.from('guesses').select('*').eq('room_id', room.id),
+      supabase.from('playlist_queue').select('*').eq('room_id', room.id),
     ])
 
     setState({
@@ -50,6 +55,7 @@ export default function RoomPage({ params }: { params: Promise<{ code: string }>
       players: players ?? [],
       songs: songs ?? [],
       guesses: guesses ?? [],
+      playlistQueue: playlistQueue ?? [],
     })
   }, [upperCode])
 
@@ -71,6 +77,7 @@ export default function RoomPage({ params }: { params: Promise<{ code: string }>
       .on('postgres_changes', { event: '*', schema: 'public', table: 'players', filter: `room_id=eq.${roomId}` }, loadState)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'songs', filter: `room_id=eq.${roomId}` }, loadState)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'guesses', filter: `room_id=eq.${roomId}` }, loadState)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'playlist_queue', filter: `room_id=eq.${roomId}` }, loadState)
       .subscribe()
 
     return () => { supabase.removeChannel(sub) }
@@ -148,7 +155,7 @@ export default function RoomPage({ params }: { params: Promise<{ code: string }>
     )
   }
 
-  const { room, cars, players, songs, guesses } = state
+  const { room, cars, players, songs, guesses, playlistQueue } = state
 
   // Validate myPlayerIds against actual players in this room
   const validMyIds = myPlayerIds.filter((id) => players.some((p) => p.id === id))
@@ -252,6 +259,42 @@ export default function RoomPage({ params }: { params: Promise<{ code: string }>
         guesses={guesses}
         cars={cars}
         myPlayerIds={validMyIds}
+        isMainLeader={isMainLeader}
+      />
+    )
+  }
+
+  // ── Playlist mode routing (diverges from the guessing game after lobby) ──────
+  if (room.phase === 'playlist_submit') {
+    return (
+      <PlaylistSubmitPhase
+        room={room}
+        allPlayers={players}
+        allSongs={songs}
+        myPlayerIds={validMyIds}
+      />
+    )
+  }
+
+  if (room.phase === 'playlist_playing') {
+    return (
+      <PlaylistPlayer
+        room={room}
+        queue={playlistQueue}
+        songs={songs}
+        players={players}
+        myPlayerIds={validMyIds}
+      />
+    )
+  }
+
+  if (room.phase === 'playlist_done') {
+    return (
+      <PlaylistDonePhase
+        room={room}
+        queue={playlistQueue}
+        songs={songs}
+        players={players}
         isMainLeader={isMainLeader}
       />
     )

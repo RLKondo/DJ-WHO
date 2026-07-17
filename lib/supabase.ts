@@ -9,7 +9,10 @@ export type Room = {
   id: string
   code: string
   main_leader_id: string
-  phase: 'lobby' | 'submit' | 'cars_playing' | 'results'
+  phase: 'lobby' | 'submit' | 'cars_playing' | 'results' | 'playlist_submit' | 'playlist_playing' | 'playlist_done'
+  mode: 'guess' | 'playlist'
+  playlist_songs_per_player: number
+  playlist_order: 'shuffle' | 'by_player'
   created_at: string
 }
 
@@ -54,6 +57,15 @@ export type Guess = {
   guesser_id: string
   song_id: string
   guessed_player_id: string
+  created_at: string
+}
+
+export type PlaylistQueueItem = {
+  id: string
+  room_id: string
+  song_id: string
+  position: number
+  played: boolean
   created_at: string
 }
 
