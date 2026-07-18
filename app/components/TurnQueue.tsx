@@ -34,7 +34,7 @@ export default function TurnQueue({ players, completedIds, onAllDone, children }
     return (
       <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#1A2238] px-6 text-center">
         <p className="text-[#F4F1EA] text-lg mb-6 opacity-70">Pass the phone to</p>
-        <PlateAvatar plateCode={next.plate_code} color={next.color} size="lg" />
+        <PlateAvatar name={next.name} color={next.color} size="lg" />
         <p className="mt-4 text-2xl font-display text-[#F4F1EA]" style={{ fontFamily: 'var(--font-oswald)' }}>
           {next.name}
         </p>

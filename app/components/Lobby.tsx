@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { supabase, Room, Player, Car } from '@/lib/supabase'
 import { generatePlateCode, pickColor } from '@/lib/plates'
 import PlateAvatar from './PlateAvatar'
+import RestartLink from './RestartLink'
 
 type Props = {
   room: Room
@@ -162,6 +163,7 @@ function HostLobby({
 
   return (
     <div className="min-h-screen flex flex-col px-5 py-8">
+      <RestartLink />
       {/* Host header */}
       <div className="rounded-2xl p-5 mb-6" style={{ backgroundColor: '#3D4466' }}>
         <div className="flex items-center justify-between mb-1">
@@ -206,7 +208,7 @@ function HostLobby({
               </div>
               <div className="flex flex-wrap gap-2">
                 {riders.map((r) => (
-                  <PlateAvatar key={r.id} plateCode={r.plate_code} color={r.color} size="sm" name={r.name} />
+                  <PlateAvatar key={r.id} color={r.color} size="sm" name={r.name} />
                 ))}
                 {riders.length === 0 && <p className="text-[#F4F1EA] opacity-30 text-xs">No riders yet</p>}
               </div>
@@ -311,6 +313,7 @@ function GuestLobby({ room, players, cars, myPlayerIds }: {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-between px-6 py-12">
+      <RestartLink />
       {/* Top: you're in */}
       <div className="w-full text-center">
         <p className="text-[#F4F1EA] opacity-50 text-sm mb-1">You're in the game!</p>
@@ -325,7 +328,7 @@ function GuestLobby({ room, players, cars, myPlayerIds }: {
         <p className="text-[#F4F1EA] opacity-40 text-xs uppercase tracking-wider">Your plate{myPlayers.length > 1 ? 's' : ''}</p>
         <div className="flex gap-4 flex-wrap justify-center">
           {myPlayers.map((p) => (
-            <PlateAvatar key={p.id} plateCode={p.plate_code} color={p.color} size="lg" name={p.name} />
+            <PlateAvatar key={p.id} color={p.color} size="lg" name={p.name} />
           ))}
         </div>
       </div>
@@ -337,7 +340,7 @@ function GuestLobby({ room, players, cars, myPlayerIds }: {
         </p>
         <div className="flex flex-wrap gap-3 justify-center mb-6">
           {players.map((p) => (
-            <PlateAvatar key={p.id} plateCode={p.plate_code} color={p.color} size="sm" name={p.name} />
+            <PlateAvatar key={p.id} color={p.color} size="sm" name={p.name} />
           ))}
         </div>
         <div className="text-center py-4 rounded-2xl" style={{ backgroundColor: '#3D4466' }}>

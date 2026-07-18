@@ -145,7 +145,7 @@ function GuessTurn({
   return (
     <div className="min-h-screen flex flex-col px-6 py-10">
       <div className="flex items-center gap-3 mb-6">
-        <PlateAvatar plateCode={player.plate_code} color={player.color} size="sm" />
+        <PlateAvatar name={player.name} color={player.color} size="sm" />
         <div>
           <p className="text-[#F4A340] text-xs font-display" style={{ fontFamily: 'var(--font-oswald)' }}>
             {player.name} — who submitted this?
@@ -178,8 +178,7 @@ function GuessTurn({
               onClick={() => handleGuess(option.id)}
               className="w-full flex items-center gap-4 rounded-xl px-4 py-3 bg-[#3D4466] active:bg-[#F4A340] active:text-[#1A2238] transition-colors"
             >
-              <PlateAvatar plateCode={option.plate_code} color={option.color} size="sm" />
-              <span className="text-[#F4F1EA] text-base">{option.name}</span>
+              <PlateAvatar name={option.name} color={option.color} size="sm" />
             </button>
           ))}
         </div>

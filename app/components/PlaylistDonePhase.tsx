@@ -43,7 +43,7 @@ export default function PlaylistDonePhase({ room, queue, songs, players, isMainL
           return (
             <div key={item.id} className="flex items-center gap-3 rounded-xl px-4 py-3 bg-[#3D4466]">
               <span className="text-[#F4F1EA] opacity-40 text-sm w-6">{i + 1}</span>
-              {contributor && <PlateAvatar plateCode={contributor.plate_code} color={contributor.color} size="sm" />}
+              {contributor && <PlateAvatar name={contributor.name} color={contributor.color} size="sm" />}
               <div className="min-w-0 flex-1">
                 <p className="text-[#F4F1EA] text-sm font-medium truncate">{song?.title ?? 'Song'}</p>
                 <p className="text-[#F4F1EA] opacity-50 text-xs truncate">{contributor?.name ?? 'Unknown'}</p>

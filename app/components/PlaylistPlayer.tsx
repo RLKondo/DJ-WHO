@@ -161,7 +161,7 @@ export default function PlaylistPlayer({ room, queue, songs, players, myPlayerId
         )}
         {contributor && (
           <div className="flex items-center justify-center gap-2 mt-2">
-            <PlateAvatar plateCode={contributor.plate_code} color={contributor.color} size="sm" />
+            <PlateAvatar name={contributor.name} color={contributor.color} size="sm" />
             <span className="text-[#F4F1EA] opacity-60 text-xs">added by {contributor.name}</span>
           </div>
         )}
@@ -213,7 +213,7 @@ export default function PlaylistPlayer({ room, queue, songs, players, myPlayerId
       </p>
       <div className="flex flex-wrap gap-3 justify-center">
         {players.map((p) => (
-          <PlateAvatar key={p.id} plateCode={p.plate_code} color={p.color} size="sm" name={p.name} />
+          <PlateAvatar key={p.id} color={p.color} size="sm" name={p.name} />
         ))}
       </div>
     </div>

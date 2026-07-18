@@ -27,7 +27,7 @@ export default function PlaylistQueue({ queue, songs, players, currentItemId }: 
               isCurrent ? 'bg-[#F4A340]/20 border border-[#F4A340]' : 'bg-[#3D4466]'
             } ${item.played && !isCurrent ? 'opacity-40' : ''}`}
           >
-            {contributor && <PlateAvatar plateCode={contributor.plate_code} color={contributor.color} size="sm" />}
+            {contributor && <PlateAvatar name={contributor.name} color={contributor.color} size="sm" />}
             <div className="min-w-0 flex-1">
               <p className="text-[#F4F1EA] text-xs font-medium truncate">{song?.title ?? 'Song'}</p>
               <p className="text-[#F4F1EA] opacity-50 text-xs truncate">{contributor?.name ?? 'Unknown'}</p>

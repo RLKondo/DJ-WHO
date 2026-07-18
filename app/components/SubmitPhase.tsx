@@ -6,6 +6,7 @@ import { VideoInfo } from '@/lib/youtube'
 import TurnQueue from './TurnQueue'
 import YouTubePicker from './YouTubePicker'
 import PlateAvatar from './PlateAvatar'
+import RestartLink from './RestartLink'
 
 type Props = {
   room: Room
@@ -61,6 +62,7 @@ export default function SubmitPhase({ room, allPlayers, myPlayerIds }: Props) {
   if (allLocalDone) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen px-6 text-center">
+        <RestartLink />
         <div className="text-5xl mb-4">🎵</div>
         <h2 className="font-display text-2xl text-[#F4A340] mb-2" style={{ fontFamily: 'var(--font-oswald)' }}>
           Songs locked in!
@@ -75,19 +77,22 @@ export default function SubmitPhase({ room, allPlayers, myPlayerIds }: Props) {
   }
 
   return (
-    <TurnQueue
-      players={myPlayers}
-      completedIds={submittedIds}
-      onAllDone={handleAllLocalDone}
-    >
-      {(currentPlayer, onDone) => (
-        <SubmitTurn
-          player={currentPlayer}
-          onSubmit={(info) => handleSongSelected(currentPlayer, info, onDone)}
-          submitting={submitting}
-        />
-      )}
-    </TurnQueue>
+    <>
+      <RestartLink />
+      <TurnQueue
+        players={myPlayers}
+        completedIds={submittedIds}
+        onAllDone={handleAllLocalDone}
+      >
+        {(currentPlayer, onDone) => (
+          <SubmitTurn
+            player={currentPlayer}
+            onSubmit={(info) => handleSongSelected(currentPlayer, info, onDone)}
+            submitting={submitting}
+          />
+        )}
+      </TurnQueue>
+    </>
   )
 }
 
@@ -103,7 +108,7 @@ function SubmitTurn({
   return (
     <div className="min-h-screen flex flex-col px-6 py-10">
       <div className="flex flex-col items-center mb-8">
-        <PlateAvatar plateCode={player.plate_code} color={player.color} size="lg" />
+        <PlateAvatar name={player.name} color={player.color} size="lg" />
         <h2 className="mt-4 font-display text-2xl text-[#F4F1EA]" style={{ fontFamily: 'var(--font-oswald)' }}>
           {player.name}
         </h2>
