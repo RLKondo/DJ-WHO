@@ -112,7 +112,7 @@ export default function ResultsPhase({
                 <div className="min-w-0 flex-1">
                   <p className="text-[#F4F1EA] text-xs font-medium leading-tight line-clamp-1">{song.title}</p>
                   {submitter && (
-                    <p className="text-[#F4A340] text-lg font-bold mt-1">{submitter.name}</p>
+                    <p className="text-[#F4A340] text-lg font-bold mt-1 truncate">{submitter.name}</p>
                   )}
                 </div>
               </div>

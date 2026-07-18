@@ -35,9 +35,9 @@ export default function ModeSelector({ mode, onModeChange, songsPerPlayer, onSon
 
       {mode === 'playlist' && (
         <div className="rounded-xl p-4 bg-[#3D4466] space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-[#F4F1EA] text-sm">How many songs can each player add?</span>
-            <div className="flex items-center gap-3">
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-[#F4F1EA] text-sm min-w-0">How many songs can each player add?</span>
+            <div className="flex items-center gap-3 flex-shrink-0">
               <button
                 onClick={() => onSongsPerPlayerChange(Math.max(1, songsPerPlayer - 1))}
                 className="w-8 h-8 rounded-lg bg-[#1A2238] text-[#F4F1EA] text-lg active:opacity-70"

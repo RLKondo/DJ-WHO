@@ -193,12 +193,12 @@ function HostLobby({
 
           return (
             <div key={car.id} className="rounded-xl p-4" style={{ backgroundColor: '#1A2238' }}>
-              <div className="flex items-center justify-between mb-2">
-                <span className="font-display text-base text-[#F4F1EA]" style={{ fontFamily: 'var(--font-oswald)' }}>
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <span className="font-display text-base text-[#F4F1EA] truncate min-w-0" style={{ fontFamily: 'var(--font-oswald)' }}>
                   {car.name}
                 </span>
                 {leader
-                  ? <span className="text-[#F4A340] text-xs">🚗 {leader.name}</span>
+                  ? <span className="text-[#F4A340] text-xs truncate max-w-[40%]">🚗 {leader.name}</span>
                   : !iAmLeader && (
                     <button onClick={() => onClaimCar(car.id)} className="text-xs rounded-lg px-3 py-1.5 bg-[#F4A340] text-[#1A2238] active:opacity-70">
                       Claim as driver

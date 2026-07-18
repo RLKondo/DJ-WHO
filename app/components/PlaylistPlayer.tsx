@@ -64,6 +64,8 @@ export default function PlaylistPlayer({ room, queue, songs, players, myPlayerId
     if (!apiReady || !playerElRef.current || playerRef.current || !currentSong) return
     loadedSongIdRef.current = currentSong.id
     playerRef.current = new window.YT!.Player(playerElRef.current, {
+      width: '100%',
+      height: '100%',
       videoId: currentSong.youtube_id,
       playerVars: { autoplay: 1, mute: 1, rel: 0, playsinline: 1 },
       events: {
@@ -160,15 +162,15 @@ export default function PlaylistPlayer({ room, queue, songs, players, myPlayerId
           <p className="text-[#F4F1EA] opacity-70 text-sm mt-1 truncate">{currentSong.title}</p>
         )}
         {contributor && (
-          <div className="flex items-center justify-center gap-2 mt-2">
+          <div className="flex items-center justify-center gap-2 mt-2 px-6">
             <PlateAvatar name={contributor.name} color={contributor.color} size="sm" />
-            <span className="text-[#F4F1EA] opacity-60 text-xs">added by {contributor.name}</span>
+            <span className="text-[#F4F1EA] opacity-60 text-xs truncate">added by {contributor.name}</span>
           </div>
         )}
       </div>
 
       {currentSong ? (
-        <div className="w-full rounded-2xl overflow-hidden bg-[#3D4466] aspect-video mb-2 relative">
+        <div className="w-full rounded-2xl overflow-hidden bg-[#3D4466] aspect-video mb-2 relative yt-player-wrapper">
           <div ref={playerElRef} className="w-full h-full" />
         </div>
       ) : (

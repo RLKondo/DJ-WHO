@@ -23,18 +23,18 @@ export default function CarStatusList({ cars, players }: Props) {
         return (
           <div
             key={car.id}
-            className="flex items-center justify-between rounded-lg px-4 py-3"
+            className="flex items-center justify-between gap-2 rounded-lg px-4 py-3"
             style={{ backgroundColor: '#3D4466' }}
           >
-            <div>
-              <div className="font-display text-base text-[#F4F1EA]" style={{ fontFamily: 'var(--font-oswald)' }}>
+            <div className="min-w-0">
+              <div className="font-display text-base text-[#F4F1EA] truncate" style={{ fontFamily: 'var(--font-oswald)' }}>
                 {car.name}
               </div>
-              <div className="text-xs text-[#F4F1EA] opacity-60 mt-0.5">
+              <div className="text-xs text-[#F4F1EA] opacity-60 mt-0.5 truncate">
                 {riders.map((r) => r.name).join(', ') || 'No riders yet'}
               </div>
             </div>
-            <div className="text-sm font-medium text-[#F4A340]">
+            <div className="text-sm font-medium text-[#F4A340] flex-shrink-0">
               {phaseLabel[car.phase]}
             </div>
           </div>
