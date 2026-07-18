@@ -14,14 +14,18 @@ export default function ModeSelector({ mode, onModeChange, songsPerPlayer, onSon
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
         <ModeCard
-          emoji="🎵"
+          icon={
+            <svg viewBox="0 0 24 24" fill="#F4A340" className="w-8 h-8">
+              <path fillRule="evenodd" clipRule="evenodd" d="M19.952 1.651a.75.75 0 01.298.599V16.303a3 3 0 01-2.176 2.884l-1.32.377a2.553 2.553 0 11-1.403-4.909l2.311-.66a1.5 1.5 0 001.088-1.442V6.994l-9 2.572v9.737a3 3 0 01-2.176 2.884l-1.32.377a2.553 2.553 0 11-1.402-4.909l2.31-.66a1.5 1.5 0 001.088-1.442V5.25a.75.75 0 01.544-.721l10.5-3a.75.75 0 01.658.122z" />
+            </svg>
+          }
           title="DJ Who?"
           tagline="Guess who picked which song"
           selected={mode === 'guess'}
           onSelect={() => onModeChange('guess')}
         />
         <ModeCard
-          emoji="🚗"
+          icon={<span className="text-3xl">🚗</span>}
           title="Road Trip Playlist"
           tagline="Build a group soundtrack together"
           selected={mode === 'playlist'}
@@ -58,9 +62,9 @@ export default function ModeSelector({ mode, onModeChange, songsPerPlayer, onSon
 }
 
 function ModeCard({
-  emoji, title, tagline, selected, onSelect,
+  icon, title, tagline, selected, onSelect,
 }: {
-  emoji: string
+  icon: React.ReactNode
   title: string
   tagline: string
   selected: boolean
@@ -71,7 +75,7 @@ function ModeCard({
       onClick={onSelect}
       className={`rounded-2xl p-4 text-left transition-colors ${selected ? 'bg-[#F4A340]/15 border-2 border-[#F4A340]' : 'bg-[#3D4466] border-2 border-transparent'}`}
     >
-      <div className="text-3xl mb-2">{emoji}</div>
+      <div className="mb-2">{icon}</div>
       <p className="font-display text-base text-[#F4F1EA] leading-tight mb-1" style={{ fontFamily: 'var(--font-oswald)' }}>
         {title}
       </p>
