@@ -1,5 +1,6 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import { supabase, Room, Player, Song, Guess, Car } from '@/lib/supabase'
 
 type Props = {
@@ -20,6 +21,7 @@ export default function ResultsPhase({
   isMainLeader,
   myPlayerIds,
 }: Props) {
+  const router = useRouter()
   const scores: Record<string, number> = {}
   for (const player of players) scores[player.id] = 0
 
@@ -219,13 +221,22 @@ export default function ResultsPhase({
       )}
 
       {isMainLeader && (
-        <button
-          onClick={handlePlayAgain}
-          className="w-full py-4 rounded-2xl bg-[#F4A340] text-[#1A2238] font-display text-xl active:opacity-80"
-          style={{ fontFamily: 'var(--font-oswald)' }}
-        >
-          Play Again
-        </button>
+        <>
+          <button
+            onClick={handlePlayAgain}
+            className="w-full py-4 rounded-2xl bg-[#F4A340] text-[#1A2238] font-display text-xl active:opacity-80 mb-3"
+            style={{ fontFamily: 'var(--font-oswald)' }}
+          >
+            Play Again
+          </button>
+          <button
+            onClick={() => router.push('/')}
+            className="w-full py-4 rounded-2xl bg-[#3D4466] text-[#F4F1EA] font-display text-lg active:opacity-70"
+            style={{ fontFamily: 'var(--font-oswald)' }}
+          >
+            Start a Road Trip Playlist instead
+          </button>
+        </>
       )}
     </div>
   )
