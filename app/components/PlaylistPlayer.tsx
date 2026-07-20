@@ -35,6 +35,13 @@ export default function PlaylistPlayer({ room, queue, songs, players, myPlayerId
   const playerElRef = useRef<HTMLDivElement>(null)
   const playerRef = useRef<any>(null)
   const loadedSongIdRef = useRef<string | null>(null)
+  // The YT.Player is only constructed once (see effect below), so its
+  // onStateChange closure would otherwise stay frozen on the first song
+  // forever. Route ENDED through refs kept fresh every render so
+  // auto-advance always acts on the current song, not the first one.
+  const isHostRef = useRef(isHost)
+  isHostRef.current = isHost
+  const handleAdvanceRef = useRef<() => void>(() => {})
   const [apiReady, setApiReady] = useState(false)
   const [playerReady, setPlayerReady] = useState(false)
   const [isPaused, setIsPaused] = useState(true)
@@ -75,7 +82,7 @@ export default function PlaylistPlayer({ room, queue, songs, players, myPlayerId
           if (!YT) return
           if (e.data === YT.PlayerState.PLAYING) setIsPaused(false)
           if (e.data === YT.PlayerState.PAUSED) setIsPaused(true)
-          if (isHost && e.data === YT.PlayerState.ENDED) handleAdvance()
+          if (isHostRef.current && e.data === YT.PlayerState.ENDED) handleAdvanceRef.current()
         },
       },
     })
@@ -99,6 +106,7 @@ export default function PlaylistPlayer({ room, queue, songs, players, myPlayerId
       await supabase.from('rooms').update({ phase: 'playlist_done' }).eq('id', room.id)
     }
   }
+  handleAdvanceRef.current = handleAdvance
 
   function handleTogglePause() {
     if (!playerRef.current) return

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Oswald, Inter } from 'next/font/google'
 import './globals.css'
+import HomeIcon from '@/app/components/HomeIcon'
 
 const oswald = Oswald({
   variable: '--font-oswald',
@@ -21,7 +22,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${oswald.variable} ${inter.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <HomeIcon />
+        {children}
+      </body>
     </html>
   )
 }

@@ -6,7 +6,6 @@ import { VideoInfo } from '@/lib/youtube'
 import TurnQueue from './TurnQueue'
 import YouTubePicker from './YouTubePicker'
 import PlateAvatar from './PlateAvatar'
-import RestartLink from './RestartLink'
 
 type Props = {
   room: Room
@@ -73,7 +72,6 @@ export default function PlaylistSubmitPhase({ room, allPlayers, allSongs, myPlay
   if (allLocalDone) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen px-6 text-center">
-        <RestartLink />
         <div className="text-5xl mb-4">🎵</div>
         <h2 className="font-display text-2xl text-[#F4A340] mb-2" style={{ fontFamily: 'var(--font-oswald)' }}>
           Songs locked in!
@@ -104,32 +102,29 @@ export default function PlaylistSubmitPhase({ room, allPlayers, allSongs, myPlay
   }
 
   return (
-    <>
-      <RestartLink />
-      <TurnQueue
-        players={myPlayers}
-        completedIds={doneIds}
-        onAllDone={() => setAllLocalDone(true)}
-      >
-        {(currentPlayer, onDone) => (
-          <PlaylistSubmitTurn
-            player={currentPlayer}
-            limit={limit}
-            initialCount={allSongs.filter((s) => s.player_id === currentPlayer.id).length}
-            onSubmitOne={async (info: VideoInfo) => {
-              await supabase.from('songs').insert({
-                room_id: room.id,
-                player_id: currentPlayer.id,
-                youtube_id: info.youtubeId,
-                title: info.title,
-                thumbnail_url: info.thumbnailUrl,
-              })
-            }}
-            onFinished={() => handlePlayerFinished(currentPlayer.id).then(onDone)}
-          />
-        )}
-      </TurnQueue>
-    </>
+    <TurnQueue
+      players={myPlayers}
+      completedIds={doneIds}
+      onAllDone={() => setAllLocalDone(true)}
+    >
+      {(currentPlayer, onDone) => (
+        <PlaylistSubmitTurn
+          player={currentPlayer}
+          limit={limit}
+          initialCount={allSongs.filter((s) => s.player_id === currentPlayer.id).length}
+          onSubmitOne={async (info: VideoInfo) => {
+            await supabase.from('songs').insert({
+              room_id: room.id,
+              player_id: currentPlayer.id,
+              youtube_id: info.youtubeId,
+              title: info.title,
+              thumbnail_url: info.thumbnailUrl,
+            })
+          }}
+          onFinished={() => handlePlayerFinished(currentPlayer.id).then(onDone)}
+        />
+      )}
+    </TurnQueue>
   )
 }
 

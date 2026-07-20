@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { supabase, Room, Player, Car } from '@/lib/supabase'
 import { generatePlateCode, pickColor } from '@/lib/plates'
 import PlateAvatar from './PlateAvatar'
-import RestartLink from './RestartLink'
 
 type Props = {
   room: Room
@@ -163,7 +162,6 @@ function HostLobby({
 
   return (
     <div className="min-h-screen flex flex-col px-5 py-8">
-      <RestartLink />
       {/* Host header */}
       <div className="rounded-2xl p-5 mb-6" style={{ backgroundColor: '#3D4466' }}>
         <div className="flex items-center justify-between mb-1">
@@ -313,7 +311,6 @@ function GuestLobby({ room, players, cars, myPlayerIds }: {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-between px-6 py-12">
-      <RestartLink />
       {/* Top: you're in */}
       <div className="w-full text-center">
         <p className="text-[#F4F1EA] opacity-50 text-sm mb-1">You're in the game!</p>
