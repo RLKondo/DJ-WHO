@@ -1,5 +1,6 @@
 'use client'
 
+import SavePlaylistPanel from './SavePlaylistPanel'
 import { useEffect, useRef, useState } from 'react'
 import { supabase, Room, Song, Player, PlaylistQueueItem } from '@/lib/supabase'
 import PlateAvatar from './PlateAvatar'
@@ -217,6 +218,20 @@ export default function PlaylistPlayer({ room, queue, songs, players, myPlayerId
         players={players}
         currentItemId={currentItem?.id ?? null}
       />
+
+      {isHost && (
+        <div className="mt-6">
+          <SavePlaylistPanel
+            theme={room.playlist_theme}
+            entries={sortedQueue.flatMap((item) => {
+              const song = songs.find((s) => s.id === item.song_id)
+              if (!song) return []
+              const who = room.playlist_solo ? null : players.find((p) => p.id === song.player_id)?.name ?? null
+              return [{ youtube_id: song.youtube_id, title: song.title, thumbnail_url: song.thumbnail_url, contributor_name: who }]
+            })}
+          />
+        </div>
+      )}
 
       <p className="text-[#F4F1EA] opacity-40 text-xs uppercase tracking-wider mt-6 mb-3 text-center">
         Listening now

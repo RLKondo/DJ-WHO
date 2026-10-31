@@ -6,6 +6,7 @@ import { VideoInfo } from '@/lib/youtube'
 import TurnQueue from './TurnQueue'
 import YouTubePicker from './YouTubePicker'
 import PlateAvatar from './PlateAvatar'
+import SavePlaylistPanel from './SavePlaylistPanel'
 
 type Props = {
   room: Room
@@ -138,6 +139,22 @@ export default function PlaylistSubmitPhase({ room, allPlayers, allSongs, myPlay
               The host is reviewing {pendingSongs.length} song{pendingSongs.length === 1 ? '' : 's'}…
             </p>
           )
+        )}
+
+        {isMainLeader && totalSongs > 0 && pendingSongs.length === 0 && (
+          <div className="w-full max-w-sm mb-6">
+            <SavePlaylistPanel
+              theme={room.playlist_theme}
+              entries={[...approvedSongs]
+                .sort((a, b) => a.created_at.localeCompare(b.created_at))
+                .map((s) => ({
+                  youtube_id: s.youtube_id,
+                  title: s.title,
+                  thumbnail_url: s.thumbnail_url,
+                  contributor_name: isSolo ? null : allPlayers.find((p) => p.id === s.player_id)?.name ?? null,
+                }))}
+            />
+          </div>
         )}
 
         {isMainLeader && canBuild && (
