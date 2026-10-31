@@ -176,8 +176,11 @@ function HostLobby({
         <p className="text-[#F4F1EA] opacity-50 text-xs">Share this code — others join at dj-who.vercel.app</p>
         {room.mode === 'playlist' && (
           <p className="text-[#4FC3A1] text-xs mt-2">
-            🚗 Road Trip Playlist — each player adds up to {room.playlist_songs_per_player} song{room.playlist_songs_per_player === 1 ? '' : 's'}
+            🎶 Group Playlist{room.playlist_clean ? ' (Clean)' : ''} — each player adds up to {room.playlist_songs_per_player} song{room.playlist_songs_per_player === 1 ? '' : 's'}
           </p>
+        )}
+        {room.mode === 'playlist' && room.playlist_theme && (
+          <p className="text-[#F4F1EA] opacity-70 text-xs mt-1">Theme: {room.playlist_theme}</p>
         )}
       </div>
 

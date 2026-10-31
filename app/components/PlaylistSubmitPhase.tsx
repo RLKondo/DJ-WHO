@@ -25,19 +25,33 @@ export default function PlaylistSubmitPhase({ room, allPlayers, allSongs, myPlay
 
   const readyCount = allPlayers.filter((p) => p.ready).length
   const totalCount = allPlayers.length
-  const totalSongs = allSongs.length
+  const approvedSongs = allSongs.filter((s) => s.approved !== false)
+  const pendingSongs = allSongs.filter((s) => s.approved === false)
+  const totalSongs = approvedSongs.length
+  const isSolo = room.playlist_solo
   const isMainLeader = myPlayers.some((p) => p.is_main_leader)
   const limit = room.playlist_songs_per_player
-  const everyoneReady = totalCount > 0 && readyCount === totalCount
+  const everyoneReady = isSolo ? allLocalDone : totalCount > 0 && readyCount === totalCount
+  const canBuild = everyoneReady && pendingSongs.length === 0 && totalSongs > 0
 
   async function handlePlayerFinished(playerId: string) {
     await supabase.from('players').update({ ready: true }).eq('id', playerId)
     setDoneIds((prev) => [...prev, playerId])
   }
 
+  async function approveSong(id: string) {
+    await supabase.from('songs').update({ approved: true }).eq('id', id)
+  }
+  async function rejectSong(id: string) {
+    await supabase.from('songs').delete().eq('id', id)
+  }
+  async function approveAll() {
+    await supabase.from('songs').update({ approved: true }).eq('room_id', room.id).eq('approved', false)
+  }
+
   async function handleBuildPlaylist() {
     setBuilding(true)
-    const { data: songs } = await supabase.from('songs').select('*').eq('room_id', room.id)
+    const { data: songs } = await supabase.from('songs').select('*').eq('room_id', room.id).neq('approved', false)
     if (!songs || songs.length === 0) { setBuilding(false); return }
 
     let ordered: Song[]
@@ -79,12 +93,54 @@ export default function PlaylistSubmitPhase({ room, allPlayers, allSongs, myPlay
         <p className="text-[#F4F1EA] opacity-70 mb-8">
           {totalSongs} song{totalSongs === 1 ? '' : 's'} added so far
         </p>
-        <div className="text-4xl font-display text-[#F4F1EA]" style={{ fontFamily: 'var(--font-oswald)' }}>
-          {readyCount} / {totalCount}
-        </div>
-        <p className="text-[#F4F1EA] opacity-50 text-sm mt-1 mb-8">players ready</p>
+        {!isSolo && (
+          <>
+            <div className="text-4xl font-display text-[#F4F1EA]" style={{ fontFamily: 'var(--font-oswald)' }}>
+              {readyCount} / {totalCount}
+            </div>
+            <p className="text-[#F4F1EA] opacity-50 text-sm mt-1 mb-8">players ready</p>
+          </>
+        )}
 
-        {isMainLeader && everyoneReady && (
+        {room.playlist_clean && pendingSongs.length > 0 && (
+          isMainLeader ? (
+            <div className="w-full max-w-sm text-left mb-6">
+              <p className="text-[#F4A340] text-xs font-display uppercase tracking-widest mb-2" style={{ fontFamily: 'var(--font-oswald)' }}>
+                Approve songs ({pendingSongs.length})
+              </p>
+              <div className="space-y-2">
+                {pendingSongs.map((s) => {
+                  const who = allPlayers.find((p) => p.id === s.player_id)
+                  return (
+                    <div key={s.id} className="rounded-xl p-3 bg-[#3D4466]">
+                      <p className="text-[#F4F1EA] text-sm leading-snug">{s.title}</p>
+                      <p className="text-[#F4F1EA] opacity-50 text-xs mb-2">{who?.name ?? 'Unknown'}</p>
+                      <div className="flex gap-2">
+                        <button onClick={() => rejectSong(s.id)}
+                          className="flex-1 py-2 rounded-lg bg-[#1A2238] text-[#E8503A] text-sm active:opacity-70">
+                          Reject
+                        </button>
+                        <button onClick={() => approveSong(s.id)}
+                          className="flex-1 py-2 rounded-lg bg-[#4FC3A1] text-[#1A2238] text-sm font-medium active:opacity-80">
+                          Approve
+                        </button>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+              <button onClick={approveAll} className="w-full mt-3 py-2 text-[#F4F1EA] opacity-60 text-sm underline">
+                Approve all
+              </button>
+            </div>
+          ) : (
+            <p className="text-[#F4F1EA] opacity-50 text-xs mb-6">
+              The host is reviewing {pendingSongs.length} song{pendingSongs.length === 1 ? '' : 's'}…
+            </p>
+          )
+        )}
+
+        {isMainLeader && canBuild && (
           <button
             onClick={handleBuildPlaylist}
             disabled={building}
@@ -94,8 +150,14 @@ export default function PlaylistSubmitPhase({ room, allPlayers, allSongs, myPlay
             {building ? 'Building…' : 'Build Playlist →'}
           </button>
         )}
-        {isMainLeader && !everyoneReady && (
-          <p className="text-[#F4F1EA] opacity-40 text-xs">Waiting for everyone before you can build the playlist…</p>
+        {isMainLeader && !canBuild && (
+          <p className="text-[#F4F1EA] opacity-40 text-xs">
+            {!everyoneReady
+              ? 'Waiting for everyone before you can build the playlist…'
+              : pendingSongs.length > 0
+                ? 'Approve or reject the songs above to continue.'
+                : 'Add at least one song to build the playlist.'}
+          </p>
         )}
       </div>
     )
@@ -111,6 +173,9 @@ export default function PlaylistSubmitPhase({ room, allPlayers, allSongs, myPlay
         <PlaylistSubmitTurn
           player={currentPlayer}
           limit={limit}
+          clean={room.playlist_clean}
+          theme={room.playlist_theme}
+          solo={isSolo}
           initialCount={allSongs.filter((s) => s.player_id === currentPlayer.id).length}
           onSubmitOne={async (info: VideoInfo) => {
             await supabase.from('songs').insert({
@@ -118,6 +183,7 @@ export default function PlaylistSubmitPhase({ room, allPlayers, allSongs, myPlay
               player_id: currentPlayer.id,
               youtube_id: info.youtubeId,
               title: info.title,
+              approved: !room.playlist_clean || room.playlist_solo,
               thumbnail_url: info.thumbnailUrl,
             })
           }}
@@ -131,12 +197,18 @@ export default function PlaylistSubmitPhase({ room, allPlayers, allSongs, myPlay
 function PlaylistSubmitTurn({
   player,
   limit,
+  clean,
+  theme,
+  solo,
   initialCount,
   onSubmitOne,
   onFinished,
 }: {
   player: Player
   limit: number
+  clean: boolean
+  theme: string | null
+  solo: boolean
   initialCount: number
   onSubmitOne: (info: VideoInfo) => Promise<void>
   onFinished: () => void
@@ -162,8 +234,10 @@ function PlaylistSubmitTurn({
         <h2 className="mt-4 font-display text-2xl text-[#F4F1EA]" style={{ fontFamily: 'var(--font-oswald)' }}>
           {player.name}
         </h2>
-        <p className="text-[#F4A340] text-sm mt-1">Add up to {limit} song{limit === 1 ? '' : 's'}</p>
-        <p className="text-[#F4F1EA] text-xs opacity-60 mt-1">{count} / {limit} songs added</p>
+        {theme && <p className="text-[#4FC3A1] text-sm mt-1 text-center">Theme: {theme}</p>}
+        <p className="text-[#F4A340] text-sm mt-1">{solo ? 'Add as many songs as you like' : `Add up to ${limit} song${limit === 1 ? '' : 's'}`}</p>
+        {clean && <p className="text-[#F4F1EA] opacity-50 text-xs mt-1">Clean playlist{solo ? '' : ' — host approves each song'}</p>}
+        <p className="text-[#F4F1EA] text-xs opacity-60 mt-1">{solo ? `${count} song${count === 1 ? '' : 's'} added` : `${count} / ${limit} songs added`}</p>
       </div>
 
       {submitting ? (
@@ -171,7 +245,7 @@ function PlaylistSubmitTurn({
           <p className="text-[#F4F1EA] opacity-70">Adding…</p>
         </div>
       ) : picking ? (
-        <YouTubePicker onSelect={handleSelect} />
+        <YouTubePicker onSelect={handleSelect} clean={clean} />
       ) : atLimit ? (
         <div className="flex-1 flex flex-col items-center justify-center gap-6 text-center">
           <p className="text-[#4FC3A1] text-lg">✅ You've added all your songs!</p>

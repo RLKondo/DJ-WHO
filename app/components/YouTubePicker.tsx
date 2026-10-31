@@ -1,15 +1,17 @@
 'use client'
 
 import { useState } from 'react'
+import { looksExplicit } from '@/lib/clean'
 import { fetchVideoInfo, parseYouTubeId, searchYouTube, VideoInfo, SearchResult } from '@/lib/youtube'
 
 type Props = {
   onSelect: (info: VideoInfo) => void
+  clean?: boolean
 }
 
 const hasSearchKey = Boolean(process.env.NEXT_PUBLIC_YOUTUBE_API_KEY)
 
-export default function YouTubePicker({ onSelect }: Props) {
+export default function YouTubePicker({ onSelect, clean = false }: Props) {
   const [tab, setTab] = useState<'paste' | 'search'>(hasSearchKey ? 'search' : 'paste')
   const [pasteInput, setPasteInput] = useState('')
   const [pasteError, setPasteError] = useState('')
@@ -17,6 +19,7 @@ export default function YouTubePicker({ onSelect }: Props) {
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<SearchResult[]>([])
   const [searching, setSearching] = useState(false)
+  const [searchNotice, setSearchNotice] = useState('')
   const [preview, setPreview] = useState<VideoInfo | null>(null)
 
   async function handlePaste() {
@@ -27,18 +30,21 @@ export default function YouTubePicker({ onSelect }: Props) {
     const info = await fetchVideoInfo(id)
     setPasting(false)
     if (!info) { setPasteError('Couldn\'t load video info — is the URL correct?'); return }
+    if (clean && looksExplicit(info.title)) { setPasteError('That song looks explicit — this is a Clean playlist. Try another.'); return }
     setPreview(info)
   }
 
   async function handleSearch() {
     if (!searchQuery.trim()) return
     setSearching(true)
-    const results = await searchYouTube(searchQuery.trim())
+    const results = await searchYouTube(searchQuery.trim(), clean)
     setSearchResults(results)
     setSearching(false)
   }
 
   async function handleSearchSelect(result: SearchResult) {
+    if (clean && looksExplicit(result.title)) { setSearchNotice('That song looks explicit — this is a Clean playlist.'); return }
+    setSearchNotice('')
     const info = await fetchVideoInfo(result.youtubeId)
     if (info) setPreview(info)
   }
@@ -131,6 +137,7 @@ export default function YouTubePicker({ onSelect }: Props) {
               {searching ? '…' : 'Go'}
             </button>
           </div>
+          {searchNotice && <p className="text-[#E8503A] text-xs">{searchNotice}</p>}
           <div className="space-y-2 max-h-64 overflow-y-auto">
             {searchResults.map((r) => (
               <button

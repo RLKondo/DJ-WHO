@@ -46,11 +46,11 @@ export type SearchResult = {
 }
 
 // Search YouTube — requires NEXT_PUBLIC_YOUTUBE_API_KEY
-export async function searchYouTube(query: string): Promise<SearchResult[]> {
+export async function searchYouTube(query: string, clean = false): Promise<SearchResult[]> {
   const key = process.env.NEXT_PUBLIC_YOUTUBE_API_KEY
   if (!key) return []
   const res = await fetch(
-    `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=8&q=${encodeURIComponent(query)}&key=${key}`
+    `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=8${clean ? "&safeSearch=strict" : ""}&q=${encodeURIComponent(query)}&key=${key}`
   )
   if (!res.ok) return []
   const data = await res.json()

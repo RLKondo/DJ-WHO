@@ -13,6 +13,9 @@ export type Room = {
   mode: 'guess' | 'playlist'
   playlist_songs_per_player: number
   playlist_order: 'shuffle' | 'by_player'
+  playlist_clean: boolean
+  playlist_theme: string | null
+  playlist_solo: boolean
   created_at: string
 }
 
@@ -48,6 +51,7 @@ export type Song = {
   youtube_id: string
   title: string
   thumbnail_url: string | null
+  approved: boolean
   created_at: string
 }
 
@@ -69,3 +73,21 @@ export type PlaylistQueueItem = {
   created_at: string
 }
 
+
+export type SavedPlaylist = {
+  id: string
+  code: string
+  name: string
+  theme: string | null
+  created_at: string
+}
+
+export type SavedPlaylistSong = {
+  id: string
+  playlist_id: string
+  position: number
+  youtube_id: string
+  title: string
+  thumbnail_url: string | null
+  contributor_name: string | null
+}

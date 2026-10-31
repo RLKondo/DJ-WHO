@@ -234,7 +234,7 @@ export default function ResultsPhase({
             className="w-full py-4 rounded-2xl bg-[#3D4466] text-[#F4F1EA] font-display text-lg active:opacity-70"
             style={{ fontFamily: 'var(--font-oswald)' }}
           >
-            Start a Road Trip Playlist instead
+            Start a Playlist instead
           </button>
         </>
       )}

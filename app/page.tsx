@@ -1,13 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { generateRoomCode, generatePlateCode, pickColor } from '@/lib/plates'
-import ModeSelector from '@/app/components/ModeSelector'
+import ModeSelector, { Mode, PlaylistType } from '@/app/components/ModeSelector'
+import { getSavedRefs, SavedRef } from '@/lib/clean'
 
-type Tab = 'create' | 'join'
-type Mode = 'guess' | 'playlist'
+type Tab = 'create' | 'join' | 'saved'
 
 export default function LandingPage() {
   const router = useRouter()
@@ -18,6 +18,13 @@ export default function LandingPage() {
   const [error, setError] = useState('')
   const [mode, setMode] = useState<Mode>('guess')
   const [songsPerPlayer, setSongsPerPlayer] = useState(3)
+  const [playlistType, setPlaylistType] = useState<PlaylistType>('group')
+  const [clean, setClean] = useState(false)
+  const [theme, setTheme] = useState('')
+  const [savedCode, setSavedCode] = useState('')
+  const [savedRefs, setSavedRefs] = useState<SavedRef[]>([])
+
+  useEffect(() => { setSavedRefs(getSavedRefs()) }, [])
 
   async function handleCreate() {
     if (!name.trim()) return
@@ -28,9 +35,13 @@ export default function LandingPage() {
       color: pickColor(0), is_main_leader: true, is_car_leader: true, ready: false,
     }).select().single()
     if (!player) { setError('Failed to create. Try again.'); setLoading(false); return }
+    const solo = mode === 'playlist' && playlistType === 'solo'
     const { data: room } = await supabase.from('rooms').insert({
-      code, main_leader_id: player.id, phase: 'lobby',
-      mode, playlist_songs_per_player: songsPerPlayer, playlist_order: 'shuffle',
+      code, main_leader_id: player.id, phase: solo ? 'playlist_submit' : 'lobby',
+      mode, playlist_songs_per_player: solo ? 50 : songsPerPlayer, playlist_order: 'shuffle',
+      playlist_clean: mode === 'playlist' && clean,
+      playlist_theme: mode === 'playlist' && theme.trim() ? theme.trim() : null,
+      playlist_solo: solo,
     }).select().single()
     if (!room) { setError('Failed to create room. Try again.'); setLoading(false); return }
     const { data: car } = await supabase.from('cars').insert({ room_id: room.id, name: 'Car 1', car_leader_id: player.id }).select().single()
@@ -62,11 +73,11 @@ export default function LandingPage() {
 
       <div className="w-full max-w-sm space-y-4">
         <div className="flex rounded-xl overflow-hidden border border-[#3D4466]">
-          {(['create', 'join'] as const).map((t) => (
+          {(['create', 'join', 'saved'] as const).map((t) => (
             <button key={t} onClick={() => { setTab(t); setError('') }}
               className={`flex-1 py-2.5 text-sm font-display transition-colors ${tab === t ? 'bg-[#3D4466] text-[#F4A340]' : 'text-[#F4F1EA] opacity-50'}`}
               style={{ fontFamily: 'var(--font-oswald)' }}>
-              {t === 'create' ? 'New Game' : 'Join Game'}
+              {t === 'create' ? 'New Game' : t === 'join' ? 'Join Game' : 'Saved'}
             </button>
           ))}
         </div>
@@ -76,6 +87,12 @@ export default function LandingPage() {
             <ModeSelector
               mode={mode}
               onModeChange={setMode}
+              playlistType={playlistType}
+              onPlaylistTypeChange={setPlaylistType}
+              clean={clean}
+              onCleanChange={setClean}
+              theme={theme}
+              onThemeChange={setTheme}
               songsPerPlayer={songsPerPlayer}
               onSongsPerPlayerChange={setSongsPerPlayer}
             />
@@ -86,7 +103,7 @@ export default function LandingPage() {
             <button onClick={handleCreate} disabled={loading || !name.trim()}
               className="w-full py-4 rounded-2xl bg-[#F4A340] text-[#1A2238] font-display text-xl disabled:opacity-40 active:opacity-80"
               style={{ fontFamily: 'var(--font-oswald)' }}>
-              {loading ? 'Creating…' : 'Create Room'}
+              {loading ? 'Creating…' : mode === 'playlist' && playlistType === 'solo' ? 'Start My Playlist' : 'Create Room'}
             </button>
           </>
         )}
@@ -103,6 +120,33 @@ export default function LandingPage() {
               style={{ fontFamily: 'var(--font-oswald)' }}>
               {loading ? 'Looking up…' : 'Join Room'}
             </button>
+          </>
+        )}
+
+        {tab === 'saved' && (
+          <>
+            <input type="text" placeholder="Playlist code (e.g. JAZZ-4821)" value={savedCode} maxLength={10}
+              onChange={(e) => setSavedCode(e.target.value.toUpperCase())}
+              onKeyDown={(e) => e.key === 'Enter' && savedCode.trim() && router.push(`/playlist/${savedCode.trim()}`)}
+              className="w-full rounded-xl px-4 py-4 bg-[#3D4466] text-[#F4F1EA] placeholder-[#F4F1EA]/40 outline-none text-center font-display text-2xl tracking-widest"
+              style={{ fontFamily: 'var(--font-oswald)' }} />
+            <button onClick={() => router.push(`/playlist/${savedCode.trim()}`)} disabled={savedCode.trim().length < 4}
+              className="w-full py-4 rounded-2xl bg-[#F4A340] text-[#1A2238] font-display text-xl disabled:opacity-40 active:opacity-80"
+              style={{ fontFamily: 'var(--font-oswald)' }}>
+              Open Playlist
+            </button>
+            {savedRefs.length > 0 && (
+              <div className="space-y-2 pt-2">
+                <p className="text-[#F4F1EA] opacity-40 text-xs uppercase tracking-wider">My saved playlists</p>
+                {savedRefs.map((r) => (
+                  <button key={r.code} onClick={() => router.push(`/playlist/${r.code}`)}
+                    className="w-full flex items-center justify-between gap-3 rounded-xl px-4 py-3 bg-[#3D4466] active:opacity-70 text-left">
+                    <span className="text-[#F4F1EA] text-sm truncate min-w-0">{r.name}</span>
+                    <span className="text-[#F4A340] text-sm font-display tracking-wider flex-shrink-0" style={{ fontFamily: 'var(--font-oswald)' }}>{r.code}</span>
+                  </button>
+                ))}
+              </div>
+            )}
           </>
         )}
       </div>
